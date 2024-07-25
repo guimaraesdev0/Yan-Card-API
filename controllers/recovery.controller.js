@@ -7,6 +7,7 @@ const authToken = process.env.AuthTokenTwilio;
 const clientTwilio = require('twilio')(accountSid, authToken);
 
 
+
 async function createRecovery(req, res) {
     await body('telefone').isMobilePhone().run(req);
 
@@ -35,7 +36,7 @@ async function createRecovery(req, res) {
         const data = {
             token: recoveryCode,
             idusuario: user.id,
-            data: new Date().toLocaleString('pt-BR', { timeZone: 'UTC' }),
+            data: new Date().toISOString().slice(0, 19).replace('T', ' '), // Formatação para MySQL DATETIME
             usado: 0
         };
         await recoveryModel.createRecovery(data);
