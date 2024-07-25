@@ -1,7 +1,9 @@
 const { body, validationResult } = require('express-validator');
 const UserModel = require('../services/user.service');
-const bcrypt = require('bcrypt');
-const md5 = require('md5')
+const md5 = require('md5');
+const JWT = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 async function getAllUsers(req, res) {
     try {
@@ -49,7 +51,9 @@ async function login(req, res) {
         }
 
         const userData = await UserModel.getUserById(user.id);
-        res.status(200).json(userData);
+        const token = JWT.sign({ id: userData.id }, JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ user: userData, token });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -58,7 +62,7 @@ async function login(req, res) {
 async function createUser(req, res) {
     await body('nome').isString().isLength({ min: 3 }).trim().escape().run(req);
     await body('email').isEmail().normalizeEmail().run(req);
-    await body('senha').isLength({ min: 6 }).trim().escape().run(req); 
+    await body('senha').isLength({ min: 6 }).trim().escape().run(req);
     await body('telefone').isMobilePhone().run(req);
     await body('nascimento').isString().run(req);
 
@@ -74,7 +78,6 @@ async function createUser(req, res) {
             return res.status(400).json({ error: 'Email or Number already exists', existingUser });
         }
 
-        // Encripta a senha com md5
         const hashedPassword = md5(req.body.senha);
 
         const newUser = {
@@ -86,17 +89,18 @@ async function createUser(req, res) {
         };
 
         const createdUser = await UserModel.createUser(newUser);
-        res.status(201).json(createdUser);
+        const token = JWT.sign({ id: createdUser.id }, JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(201).json({ user: createdUser, token });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
 
-
 async function getCupons(req, res) {
     try {
-        const newUser = await UserModel.getCupons();
-        res.status(201).json(newUser);
+        const cupons = await UserModel.getCupons();
+        res.status(200).json(cupons);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
