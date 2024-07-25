@@ -77,10 +77,10 @@ async function changePassword(req, res) {
 }
 
 async function verifyRecoveryCode(req, res) {
-    await param('Code').isString().run(req);
+    await body('Code').isString().run(req);
 
     try {
-        const recoveryData = await recoveryModel.findRecoveryByCode(req.params.Code);
+        const recoveryData = await recoveryModel.findRecoveryByCode(req.body.Code);
         if (!recoveryData) {
             return res.status(404).json({ error: 'Código de recuperação inválido' });
         }
