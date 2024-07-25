@@ -11,20 +11,7 @@ const app = express();
 
 connectToDatabase();
 
-// Configuração do CORS
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins === '*' || allowedOrigins.split(',').includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    optionsSuccessStatus: 200,
-};
 
-app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use('/api', userRoutes, cupomRoutes, recoveryRoutes);
 
