@@ -20,24 +20,24 @@ async function createRecovery(req, res) {
     if (existingUser.length === 0) {
         return res.status(404).json({ error: 'Número não encontrado' });
     }
+
     const user = existingUser[0];
     try {
         const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-        //Envia código SMS
-        await clientTwilio.messages
-            .create({
-                body: `*Yan-Card*\n\nSeu código de recuperação de senha é: *${recoveryCode}*\n\nCaso você não tenha solicitado, por favor ignore esta mensagem.`,
-                to: `+${req.body.telefone}`,
-                from: process.env.TwilioPhone,
-            })
+        // Envia código SMS
+        await clientTwilio.messages.create({
+            body: `*Yan-Card*\n\nSeu código de recuperação de senha é: *${recoveryCode}*\n\nCaso você não tenha solicitado, por favor ignore esta mensagem.`,
+            to: `+${req.body.telefone}`,
+            from: process.env.TwilioPhone,
+        });
 
         const data = {
             token: recoveryCode,
             idusuario: user.id,
-            data: new Date().toISOString(),
+            data: new Date().toLocaleString('pt-BR', { timeZone: 'UTC' }),
             usado: 0
-        }
+        };
         await recoveryModel.createRecovery(data);
 
         return res.status(200).json({ success: 'Código de recuperação criado com sucesso' });
@@ -46,6 +46,7 @@ async function createRecovery(req, res) {
         return res.status(500).json({ error: 'Erro ao criar código de recuperação' });
     }
 }
+
 
 
 async function changePassword(req, res) {
