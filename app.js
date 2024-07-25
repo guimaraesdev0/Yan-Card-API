@@ -1,7 +1,6 @@
 // app.js
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
 const userRoutes = require('./routes/user.routes');
 const cupomRoutes = require('./routes/cupom.routes');
 const recoveryRoutes = require('./routes/recovery.routes');
