@@ -20,6 +20,9 @@ async function getAllCupons() {
 
 async function getAllCuponsByUserId(userId) {
     try {
+        if (!userId) {
+            throw new Error('userId is required');
+        }
         const connection = await connectToDatabase();
         const query = `
             SELECT cuponsusados.*, restaurantes.nome AS restauranteNome
