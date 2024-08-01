@@ -9,9 +9,12 @@ async function getAllUsedCupons() {
             JOIN restaurantes ON cuponsusados.idrestaurante = restaurantes.id
             WHERE cuponsusados.usado = 1
         `;
+        console.log('Executing query:', query);
         const [rows] = await connection.query(query);
+        console.log('Query result:', rows);
         return rows;
     } catch (error) {
+        console.error('Error executing query:', error);
         throw new Error(error);
     }
 }
@@ -25,9 +28,13 @@ async function getAllUsedCuponsByUserId(userId) {
             JOIN restaurantes ON cuponsusados.idrestaurante = restaurantes.id
             WHERE cuponsusados.idcliente = ? AND cuponsusados.usado = 1
         `;
+        console.log('Executing query with userId:', userId);
+        console.log('Query:', query);
         const [rows] = await connection.query(query, [userId]);
+        console.log('Query result:', rows);
         return rows;
     } catch (error) {
+        console.error('Error executing query:', error);
         throw new Error(error);
     }
 }
