@@ -1,13 +1,12 @@
 const connectToDatabase = require('../config/db.config');
 
-async function getAllUsedCupons() {
+async function getAllCupons() {
     try {
         const connection = await connectToDatabase();
         const query = `
             SELECT cuponsusados.*, restaurantes.nome AS restauranteNome
             FROM cuponsusados
             JOIN restaurantes ON cuponsusados.idrestaurante = restaurantes.id
-            WHERE cuponsusados.usado = 1
         `;
         const [rows] = await connection.query(query);
         return rows;
@@ -16,14 +15,14 @@ async function getAllUsedCupons() {
     }
 }
 
-async function getAllUsedCuponsByUserId(userId) {
+async function getAllCuponsByUserId(userId) {
     try {
         const connection = await connectToDatabase();
         const query = `
             SELECT cuponsusados.*, restaurantes.nome AS restauranteNome
             FROM cuponsusados
             JOIN restaurantes ON cuponsusados.idrestaurante = restaurantes.id
-            WHERE cuponsusados.idcliente = ? AND cuponsusados.usado = 1
+            WHERE cuponsusados.idcliente = ?
         `;
         const [rows] = await connection.query(query, [userId]);
         return rows;
@@ -33,6 +32,6 @@ async function getAllUsedCuponsByUserId(userId) {
 }
 
 module.exports = {
-    getAllUsedCupons,
-    getAllUsedCuponsByUserId
+    getAllCupons,
+    getAllCuponsByUserId
 };
