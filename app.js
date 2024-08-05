@@ -1,11 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const axios = require('axios'); // Importar o axios
 const userRoutes = require('./routes/user.routes');
 const cupomRoutes = require('./routes/cupom.routes');
 const recoveryRoutes = require('./routes/recovery.routes');
 const connectToDatabase = require('./config/db.config');
-const os = require('os'); // Importando o módulo os
+const os = require('os');
 
 const app = express();
 
@@ -53,5 +54,14 @@ app.use((req, res, next) => {
 app.use((error, req, res, next) => {
     res.status(500).json({ message: error.message });
 });
+
+// Fazer uma requisição GET quando o servidor iniciar
+axios.get('https://4dab6531-4268-4d44-9f2a-cc3e0187d8d3-00-19vf0byzv29z0.janeway.replit.dev/')
+    .then(() => {
+        console.log('Requisição GET enviada com sucesso!');
+    })
+    .catch((error) => {
+        console.error('Erro ao enviar requisição GET:', error.message);
+    });
 
 module.exports = app;
