@@ -93,14 +93,6 @@ async function createUser(req, res) {
         const createdUser = await UserModel.createUser(newUser);
         const token = JWT.sign({ id: createdUser.id }, JWT_SECRET, { expiresIn: '1h' });
 
-        try {
-            const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
-            await createCode(recoveryCode,createdUser.insertId);
-            console.log("Código de recuperação enviado")
-        } catch (error) {
-            console.log("Ocorreu um erro ao criar código de recuperação")
-        }
-
         res.status(201).json({ user: createdUser, token });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error', details: error.message });
