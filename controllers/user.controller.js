@@ -2,6 +2,8 @@ const { body, validationResult } = require('express-validator');
 const UserModel = require('../services/user.service');
 const md5 = require('md5');
 const JWT = require('jsonwebtoken');
+const { createCode } = require('../services/cad_code.service');
+
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -86,9 +88,18 @@ async function createUser(req, res) {
             telefone: req.body.telefone,
             nascimento: req.body.nascimento
         };
+        
 
         const createdUser = await UserModel.createUser(newUser);
         const token = JWT.sign({ id: createdUser.id }, JWT_SECRET, { expiresIn: '1h' });
+
+        try {
+            const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+            await createCode(recoveryCode,createdUser.insertId);
+            console.log("Código de recuperação enviado")
+        } catch (error) {
+            console.log("Ocorreu um erro ao criar código de recuperação")
+        }
 
         res.status(201).json({ user: createdUser, token });
     } catch (error) {
