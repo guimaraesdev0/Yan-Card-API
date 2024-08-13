@@ -61,14 +61,13 @@ async function login(req, res) {
 
 async function createUser(req, res) {
     await body('nome').isString().isLength({ min: 3 }).trim().escape().run(req);
-    await body('email').isEmail().normalizeEmail().run(req);
     await body('senha').isLength({ min: 6 }).trim().escape().run(req);
     await body('telefone').isMobilePhone().run(req);
     await body('nascimento').isString().run(req);
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ error: 'Todos os campos devem ser preenchidos' });
     }
 
     try {
