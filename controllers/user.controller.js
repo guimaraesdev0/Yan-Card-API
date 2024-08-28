@@ -73,7 +73,7 @@ async function createUser(req, res) {
     }
 
     try {
-        const existingUser = await UserModel.verifyExistingUserbyEmail(req.body.email, req.body.telefone);
+        const existingUser = await UserModel.verifyExistingUserbyMobileNumber(req.body.telefone);
 
         if (existingUser.length > 0) {
             return res.status(400).json({ error: 'Email or Number already exists', existingUser });
