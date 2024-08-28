@@ -3,6 +3,7 @@ const UserModel = require('../services/user.service');
 const md5 = require('md5');
 const JWT = require('jsonwebtoken');
 const { createCode } = require('../services/cad_code.service');
+const bcrypt = require('bcrypt');
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -42,14 +43,14 @@ async function login(req, res) {
         const existingUser = await UserModel.verifyExistingUserbyMobileNumber(req.body.telefone);
 
         if (existingUser.length === 0) {
-            return res.status(404).json({ error: 'Number not found' });
+            return res.status(404).json({ error: 'Número não encontrado' });
         }
 
         const user = existingUser[0];
-        const isPasswordValid = md5(req.body.senha) === user.senha;
+        const hashedPassword = md5(req.body.senha);
 
-        if (!isPasswordValid) {
-            return res.status(401).json({ error: 'Invalid password' });
+        if (hashedPassword !== user.senha) {
+            return res.status(401).json({ error: 'Senha inválida' });
         }
 
         const userData = await UserModel.getUserById(user.id);
@@ -57,13 +58,12 @@ async function login(req, res) {
 
         res.status(200).json({ user: userData, token });
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
     }
 }
 
 async function createUser(req, res) {
     await body('nome').isString().isLength({ min: 3 }).trim().escape().run(req);
-    await body('senha').isLength({ min: 6 }).trim().escape().run(req);
     await body('telefone').isMobilePhone().run(req);
     await body('nascimento').isString().run(req);
 
@@ -79,16 +79,13 @@ async function createUser(req, res) {
             return res.status(400).json({ error: 'Email or Number already exists', existingUser });
         }
 
-        const hashedPassword = md5(req.body.senha);
-
         const newUser = {
             nome: req.body.nome,
             email: req.body.email,
-            senha: hashedPassword,
             telefone: req.body.telefone,
             nascimento: req.body.nascimento
         };
-        
+
 
         const createdUser = await UserModel.createUser(newUser);
         const token = JWT.sign({ id: createdUser.id }, JWT_SECRET, { expiresIn: '1h' });

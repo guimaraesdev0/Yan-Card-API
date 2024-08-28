@@ -5,6 +5,7 @@ const md5 = require('md5')
 const accountSid = process.env.AccountSID;
 const authToken = process.env.AuthTokenTwilio;
 const clientTwilio = require('twilio')(accountSid, authToken);
+const bcrypt = require('bcrypt');
 
 
 
@@ -68,15 +69,17 @@ async function changePassword(req, res) {
         if (recoveryData.usado === 1) {
             return res.status(400).json({ error: 'Código de recuperação já utilizado' });
         }
-
-        const newpass = md5(req.body.newPassword);
+        const saltRounds = 10;
+        const newpass = await bcrypt.hash(req.body.newPassword, saltRounds);
         await UserModel.changePasswordById(recoveryData.idusuario, newpass);
         await recoveryModel.changePassword(req.body.codigo);
+
         return res.status(200).json({ success: 'Senha alterada com sucesso!' });
     } catch (error) {
-        return res.status(500).json({ error: 'Erro ao alterar a senha: ' + error });
+        return res.status(500).json({ error: 'Erro ao alterar a senha: ' + error.message });
     }
 }
+
 
 async function verifyRecoveryCode(req, res) {
     await body('Code').isString().run(req);

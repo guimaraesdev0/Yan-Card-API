@@ -1,10 +1,10 @@
+const md5 = require('md5');
 const CodeModel = require('../services/cad_code.service');
-const { body, param, validationResult } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const UserModel = require('../services/user.service');
 const accountSid = process.env.AccountSID;
 const authToken = process.env.AuthTokenTwilio;
 const clientTwilio = require('twilio')(accountSid, authToken);
-
 
 async function sendCode(req, res) {
     try {
@@ -27,31 +27,32 @@ async function sendCode(req, res) {
             const timeLeft = 300 - timeDifference; // 5 minutos = 300 segundos
 
             if (timeLeft > 0) {
-                return res.status(400).json({ error: `Aguarde ${Math.ceil(timeLeft / 60)} minutos para solicitar um novo código.` });
+                return res.status(400).json({ error: `Aguarde ${Math.ceil(timeLeft / 60)} minutos para solicitar uma nova senha.` });
             }
         }
 
         try {
-            const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
-            // Envia código SMS
+            const newPass = Math.floor(100000 + Math.random() * 900000).toString();
+            const hashedPass = md5(newPass);
+
+            await UserModel.changePasswordById(user.id, hashedPass);
+
             await clientTwilio.messages.create({
-                body: `*Yan-Card*\n\nSeu código de cadastro é: *${recoveryCode}*\n\nCaso você não tenha solicitado, por favor ignore esta mensagem.`,
+                body: `*Yan-Card*\n\nSua nova senha de login é: *${newPass}*\n\nPor favor, não compartilhe esta senha com ninguém.`,
                 to: `+55${req.body.telefone}`,
                 from: process.env.TwilioPhone,
-            });
-            await CodeModel.createCode(recoveryCode, user.id);
-    
-            return res.status(200).json({ success: 'Código de recuperação criado com sucesso' });
+            }); 
+
+            return res.status(200).json({ success: 'Nova senha criada e enviada com sucesso' });
         } catch (error) {
             console.log({ error: error });
-            return res.status(500).json({ error: 'Erro ao criar código de recuperação' });
+            return res.status(500).json({ error: 'Erro ao criar e enviar a nova senha' });
         }
 
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
     }
 }
-
 
 async function useCode(req, res) {
     await body('codigo').isString().run(req);
@@ -71,11 +72,11 @@ async function useCode(req, res) {
     try {
         const response = await CodeModel.useCode(req.body.codigo, user.id)
         if (response == false) {
-            return res.status(400).json({"error":"Código inválido ou expirado!"})          
+            return res.status(400).json({ "error": "Código inválido ou expirado!" });
         }
-        return res.status(200).json({'success': true})
+        return res.status(200).json({ 'success': true });
     } catch (error) {
-        return res.status(400).json({"error":"Código inválido ou expirado!"})
+        return res.status(400).json({ "error": "Código inválido ou expirado!" });
     }
 }
 
