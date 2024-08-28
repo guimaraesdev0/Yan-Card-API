@@ -39,7 +39,7 @@ async function sendCode(req, res) {
 
             await clientTwilio.messages.create({
                 body: `*Yan-Card*\n\nSua nova senha de login é: *${newPass}*\n\nPor favor, não compartilhe esta senha com ninguém.`,
-                to: `+55${req.body.telefone}`,
+                to: `${req.body.telefone}`,
                 from: process.env.TwilioPhone,
             }); 
 

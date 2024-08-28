@@ -30,7 +30,7 @@ async function createRecovery(req, res) {
         // Envia código SMS
         await clientTwilio.messages.create({
             body: `*Yan-Card*\n\nSeu código de recuperação de senha é: *${recoveryCode}*\n\nCaso você não tenha solicitado, por favor ignore esta mensagem.`,
-            to: `+55${req.body.telefone}`,
+            to: `${req.body.telefone}`,
             from: process.env.TwilioPhone,
         });
 
